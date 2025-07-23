@@ -1,2 +1,9 @@
 # Summarize PDF file
-This project is a Python FastAPI application that allows users to upload PDF files, which are then stored in an AWS S3 bucket. The uploaded PDF is summarized using the OpenAI API. The FastAPI framework provides RESTful endpoints for file upload and summary retrieval.
+A Python CLI application that summarizes the contents of a given PDF file using OpenAI's API.
+
+## How to use
+```shell
+> pip install -r requirements.txt
+> export OPENAI_API_KEY=<your-key>
+> python app.py example.pdf
+```

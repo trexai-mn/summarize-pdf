@@ -2,6 +2,7 @@ import openai
 from dotenv import load_dotenv
 import os
 import PyPDF2
+import click
 
 load_dotenv()  # Load environment variables from .env file
 
@@ -17,29 +18,50 @@ def extract_text_from_pdf(pdf_path):
     return text
 
 
-def summarize_text(text, max_tokens=300):
-    prompt = f"Summarize the following text:\n\n{text}"
-    response = openai.chat.completions.create(
-        model="gpt-4o",  # or use "gpt-3.5-turbo"
-        messages=[{"role": "user", "content": prompt}],
-        temperature=0.5,
-        max_tokens=max_tokens,
-    )
+def summarize_text(text, max_tokens=300, model="gpt-4.1"):
+    prompt = f"Summarize giving text, use simple english, return only summary. text:\n\n{text}"
+
+    try:
+        response = openai.chat.completions.create(
+            model=model,  # or use "gpt-3.5-turbo"
+            messages=[{"role": "user", "content": prompt}],
+            temperature=0.5,
+            max_tokens=max_tokens,
+        )
+    except Exception as e:
+        print(e)
+        return
+
     return response.choices[0].message.content.strip()
 
-# Main function
-def summarize_pdf(pdf_path):
-    text = extract_text_from_pdf(pdf_path)
-    print(f"Extracted {len(text)} characters from PDF.")
 
-    if len(text) > 10000:
-        text = text[:10000]  # truncate if too long
-    summary = summarize_text(text)
+def summarize_pdf(pdf_file, model="gpt-4o"):
+    text = extract_text_from_pdf(pdf_file)
+    print(f"Summarizing PDF file - {pdf_file}")
+    print(f"Extracted {len(text)} characters from PDF.")
+    print("Sending text to OpenAI for summarization...")
+
+    if not text:
+        return "No text found in the PDF file."
+
+    # TODO: Implement a check for text length and handle cases where the text is too long.
+    summary = summarize_text(text, model=model)
     return summary
+
+
+@click.command()
+@click.argument("pdf_file", type=click.Path(exists=True, dir_okay=False))
+@click.option("--model", default='gpt-4o', help='OpenAI model to use (e.g., gpt-4o, gpt-3.5-turbo)')
+def main(pdf_file, model):
+    """
+    Command line interface to summarize a PDF file.
+    Usage: python app.py <path_to_pdf_file>
+    """
+    summary = summarize_pdf(pdf_file, model=model)
+    if summary:
+        print("Summary: \n" + summary)
+
 
 # Main usage
 if __name__ == "__main__":
-    file_name = "example.pdf"  # Replace with your PDF file path
-    summary = summarize_pdf("example.pdf")  # Replace with your PDF file path
-
-    print("\nPDF Summary:\n", summary)
+    main()
