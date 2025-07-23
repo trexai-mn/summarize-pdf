@@ -42,7 +42,8 @@ def summarize_pdf(pdf_file, model="gpt-4o"):
     print("Sending text to OpenAI for summarization...")
 
     if not text:
-        return "No text found in the PDF file."
+        print("No text found in the PDF file.")
+        return
 
     # TODO: Implement a check for text length and handle cases where the text is too long.
     summary = summarize_text(text, model=model)
